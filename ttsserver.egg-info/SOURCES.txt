@@ -1,0 +1,8 @@
+README.md
+app.py
+pyproject.toml
+ttsserver.egg-info/PKG-INFO
+ttsserver.egg-info/SOURCES.txt
+ttsserver.egg-info/dependency_links.txt
+ttsserver.egg-info/requires.txt
+ttsserver.egg-info/top_level.txt
