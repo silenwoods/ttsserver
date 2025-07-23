@@ -51,7 +51,7 @@ def create_app():
                     os.unlink(tmp.name)
                     return f'Generated audio too large. Maximum {MAX_FILE_SIZE_MB}MB allowed.', 400
                 
-                return send_file(tmp.name, as_attachment=True, download_name='audio.wav')
+                return send_file(tmp.name, mimetype='audio/wav', as_attachment=False, download_name='audio.wav')
         except Exception as e:
             return f'Error generating audio: {str(e)}', 500
 
@@ -74,7 +74,7 @@ def create_app():
                     os.unlink(tmp.name)
                     return f'Generated audio too large. Maximum {MAX_FILE_SIZE_MB}MB allowed.', 400
                 
-                return send_file(tmp.name, as_attachment=True, download_name='audio.mp3')
+                return send_file(tmp.name, mimetype='audio/mpeg', as_attachment=False, download_name='audio.mp3')
         except Exception as e:
             return f'Error generating audio: {str(e)}', 500
 
@@ -97,7 +97,7 @@ def create_app():
                     os.unlink(tmp.name)
                     return f'Generated audio too large. Maximum {MAX_FILE_SIZE_MB}MB allowed.', 400
                 
-                return send_file(tmp.name, as_attachment=True, download_name='audio.wav')
+                return send_file(tmp.name, mimetype='audio/wav', as_attachment=False, download_name='audio.wav')
         except subprocess.TimeoutExpired:
             return 'Audio generation timed out. Please try with shorter text.', 408
         except subprocess.CalledProcessError as e:
