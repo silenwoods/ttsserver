@@ -8,5 +8,6 @@ dependencies = [
     "Flask",
     "pyttsx3",
     "gTTS",
-    "pydub"
+    "pydub",
+    "flask-cors"
 ]
