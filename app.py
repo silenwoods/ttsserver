@@ -1,6 +1,7 @@
 from flask import Flask, request, send_file
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 import pyttsx3
 from gtts import gTTS
 import tempfile
@@ -10,6 +11,15 @@ import re
 
 def create_app():
     app = Flask(__name__)
+    
+    # Enable CORS for all routes and origins
+    CORS(app, resources={
+        r"/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
     
     # Rate limiting setup
     limiter = Limiter(
@@ -109,4 +119,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=True, threaded=True, port=5000)
