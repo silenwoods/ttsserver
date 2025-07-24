@@ -108,5 +108,11 @@ def create_app():
     return app
 
 if __name__ == '__main__':
+    import ssl
     app = create_app()
-    app.run(host='0.0.0.0', debug=True)
+    
+    # HTTPS configuration
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain('cert.pem', 'key.pem')
+    
+    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=context)
