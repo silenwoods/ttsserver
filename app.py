@@ -38,16 +38,15 @@ def create_app():
             return 'Missing text parameter', 400
         if len(text) > MAX_TEXT_LENGTH:
             return f'Text too long. Maximum {MAX_TEXT_LENGTH} characters allowed.', 400
-        if not re.match(r'^[\w\s\.,!?;:\-"\'\(\)\[\]\{\}]+$', text):
-            return 'Invalid characters in text. Only alphanumerics and common punctuation allowed.', 400
         return None
 
     def detect_language(text):
         try:
-            lang = detect(text)
-            return lang
+            langresult = detect(text)
+            supported_languages = ['zh-cn', 'en', 'ja', 'fr', 'ko', 'zh-tw']
+            return langresult if langresult in supported_languages else 'zh-cn'
         except:
-            return "en"
+            return 'zh-cn'
         
     @app.route('/2')
     @limiter.limit("360 per hour")
@@ -82,8 +81,8 @@ def create_app():
             return validation_error
 
         try:
-            lang = detect_language(text)
-            tts = gTTS(text=text, lang=lang)
+            _lang = detect_language(text)
+            tts = gTTS(text=text, lang=_lang)
             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp:
                 tts.save(tmp.name)
                 
