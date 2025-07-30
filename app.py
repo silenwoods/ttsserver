@@ -8,6 +8,7 @@ import tempfile
 import os
 import subprocess
 import re
+from langdetect import detect, detect_langs
 
 def create_app():
     app = Flask(__name__)
@@ -41,6 +42,13 @@ def create_app():
             return 'Invalid characters in text. Only alphanumerics and common punctuation allowed.', 400
         return None
 
+    def detect_language(text):
+        try:
+            lang = detect(text)
+            return lang
+        except:
+            return "en"
+        
     @app.route('/2')
     @limiter.limit("360 per hour")
     def pyttsx3_route():
@@ -74,7 +82,8 @@ def create_app():
             return validation_error
 
         try:
-            tts = gTTS(text=text, lang='en')
+            lang = detect_language(text)
+            tts = gTTS(text=text, lang=lang)
             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp:
                 tts.save(tmp.name)
                 
