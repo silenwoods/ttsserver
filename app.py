@@ -40,13 +40,16 @@ def create_app():
             return f'Text too long. Maximum {MAX_TEXT_LENGTH} characters allowed.', 400
         return None
 
-    def detect_language(text):
-        try:
-            langresult = detect(text)
-            supported_languages = ['zh-cn', 'en', 'ja', 'fr', 'ko', 'zh-tw']
-            return langresult if langresult in supported_languages else 'zh-cn'
-        except:
-            return 'zh-cn'
+    def detect_language(text:str, varlang:str):
+        if varlang is None:
+            return 'en'
+        if varlang.lower() == 'auto':
+            try:
+                return detect(text)
+            except:
+                return 'en'
+        return varlang
+        
         
     @app.route('/2')
     @limiter.limit("360 per hour")
@@ -82,14 +85,7 @@ def create_app():
             return validation_error
 
         try:
-            if varlang.lower() == 'auto':
-                _lang = detect_language(text)
-            elif varlang is not None:
-                _lang = varlang
-            else:
-                _lang = 'en'
-            
-            tts = gTTS(text=text, lang=_lang)
+            tts = gTTS(text=text, lang=detect_language(text, varlang))
             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp:
                 tts.save(tmp.name)
                 
