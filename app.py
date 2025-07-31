@@ -50,31 +50,6 @@ def create_app():
                 return 'en'
         return varlang
         
-        
-    @app.route('/2')
-    @limiter.limit("360 per hour")
-    def pyttsx3_route():
-        text = request.args.get('text')
-        validation_error = validate_text(text)
-        if validation_error:
-            return validation_error
-
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
-                engine = pyttsx3.init()
-                engine.save_to_file(text, tmp.name)
-                engine.runAndWait()
-                
-                # Check file size
-                file_size_mb = os.path.getsize(tmp.name) / (1024 * 1024)
-                if file_size_mb > MAX_FILE_SIZE_MB:
-                    os.unlink(tmp.name)
-                    return f'Generated audio too large. Maximum {MAX_FILE_SIZE_MB}MB allowed.', 400
-                
-                return send_file(tmp.name, mimetype='audio/wav', as_attachment=False, download_name='audio.wav')
-        except Exception as e:
-            return f'Error generating audio: {str(e)}', 500
-
     @app.route('/1')
     @limiter.limit("360 per hour")
     def gtts_route():
@@ -99,32 +74,7 @@ def create_app():
         except Exception as e:
             return f'Error generating audio: {str(e)}', 500
 
-    @app.route('/3')
-    @limiter.limit("360 per hour")
-    def espeak_route():
-        text = request.args.get('text')
-        validation_error = validate_text(text)
-        if validation_error:
-            return validation_error
 
-        try:
-            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as tmp:
-                cmd = ['espeak', '-w', tmp.name, text]
-                subprocess.run(cmd, check=True, timeout=30)
-                
-                # Check file size
-                file_size_mb = os.path.getsize(tmp.name) / (1024 * 1024)
-                if file_size_mb > MAX_FILE_SIZE_MB:
-                    os.unlink(tmp.name)
-                    return f'Generated audio too large. Maximum {MAX_FILE_SIZE_MB}MB allowed.', 400
-                
-                return send_file(tmp.name, mimetype='audio/wav', as_attachment=False, download_name='audio.wav')
-        except subprocess.TimeoutExpired:
-            return 'Audio generation timed out. Please try with shorter text.', 408
-        except subprocess.CalledProcessError as e:
-            return f'Error generating audio: {str(e)}', 500
-        except Exception as e:
-            return f'Error generating audio: {str(e)}', 500
 
     return app
 
