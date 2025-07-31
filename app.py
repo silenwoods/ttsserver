@@ -76,12 +76,19 @@ def create_app():
     @limiter.limit("360 per hour")
     def gtts_route():
         text = request.args.get('text')
+        varlang = request.args.get('lang')
         validation_error = validate_text(text)
         if validation_error:
             return validation_error
 
         try:
-            _lang = detect_language(text)
+            if varlang.lower() == 'auto':
+                _lang = detect_language(text)
+            elif varlang is not None:
+                _lang = varlang
+            else:
+                _lang = 'en'
+            
             tts = gTTS(text=text, lang=_lang)
             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp:
                 tts.save(tmp.name)
