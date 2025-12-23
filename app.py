@@ -78,9 +78,10 @@ def create_app():
 
     return app
 
+app = create_app()
+
 if __name__ == '__main__':
     import ssl
-    app = create_app()
     
     # HTTPS configuration
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
