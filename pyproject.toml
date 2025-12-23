@@ -11,4 +11,5 @@ dependencies = [
     "pydub",
     "flask-cors",
     "flask-limiter>=4.1.1",
+    "langdetect>=1.0.9",
 ]
