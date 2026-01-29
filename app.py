@@ -1,9 +1,10 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, send_file, Response
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_cors import CORS
 import pyttsx3
 from gtts import gTTS
+from dashscope.audio.tts_v2 import SpeechSynthesizer
 import tempfile
 import os
 import subprocess
@@ -74,7 +75,37 @@ def create_app():
         except Exception as e:
             return f'Error generating audio: {str(e)}', 500
 
+    @app.route('/2')
+    @limiter.limit("360 per hour")
+    def cosyvoice_route():
+        """阿里百炼平台 CosyVoice TTS - 使用龙安欢声音"""
+        text = request.args.get('text')
+        validation_error = validate_text(text)
+        if validation_error:
+            return validation_error
 
+        try:
+            synthesizer = SpeechSynthesizer(
+                model="cosyvoice-v3-plus",
+                voice="longanhuan"
+            )
+            audio = synthesizer.call(text)
+
+            if audio is None:
+                return 'Error: Failed to generate audio from CosyVoice API', 500
+
+            with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp:
+                tmp.write(audio)
+                tmp.flush()
+
+                file_size_mb = os.path.getsize(tmp.name) / (1024 * 1024)
+                if file_size_mb > MAX_FILE_SIZE_MB:
+                    os.unlink(tmp.name)
+                    return f'Generated audio too large. Maximum {MAX_FILE_SIZE_MB}MB allowed.', 400
+
+                return send_file(tmp.name, mimetype='audio/mpeg', as_attachment=False, download_name='audio.mp3')
+        except Exception as e:
+            return f'Error generating audio: {str(e)}', 500
 
     return app
 
