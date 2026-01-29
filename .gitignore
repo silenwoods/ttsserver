@@ -3,3 +3,4 @@ ttsserver.egg-info
 *.pem
 *.key
 *.crt
+.env
