@@ -33,6 +33,7 @@ def create_app():
     # Configuration
     MAX_TEXT_LENGTH = 1000  # Maximum characters per request
     MAX_FILE_SIZE_MB = 10   # Maximum audio file size in MB
+    DEDUP_WINDOW = "1 per 10 seconds"
     
     def validate_text(text):
         if not text:
@@ -50,8 +51,13 @@ def create_app():
             except:
                 return 'en'
         return varlang
+
+    def url_dedup_key():
+        # Use the full URL (including query string) as the deduplication key.
+        return request.url
         
     @app.route('/1')
+    @limiter.limit(DEDUP_WINDOW, key_func=url_dedup_key)
     @limiter.limit("360 per hour")
     def gtts_route():
         text = request.args.get('text')
@@ -76,6 +82,7 @@ def create_app():
             return f'Error generating audio: {str(e)}', 500
 
     @app.route('/2')
+    @limiter.limit(DEDUP_WINDOW, key_func=url_dedup_key)
     @limiter.limit("360 per hour")
     def cosyvoice_route():
         """阿里百炼平台 CosyVoice TTS - 使用龙安欢声音"""
