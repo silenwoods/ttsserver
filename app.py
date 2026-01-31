@@ -27,7 +27,7 @@ def create_app():
     
     # Rate limiting setup
     app.config["RATELIMIT_HEADERS_ENABLED"] = True
-    app.config["LOG_RATE_LIMITS"] = False
+    app.config["LOG_RATE_LIMITS"] = True
     limiter = Limiter(
         key_func=get_remote_address,
         app=app,
