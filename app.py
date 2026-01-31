@@ -27,7 +27,7 @@ def create_app():
     limiter = Limiter(
         key_func=get_remote_address,
         app=app,
-        default_limits=["100 per hour"]
+        default_limits=["3600 per hour"]
     )
     
     # Configuration
@@ -58,7 +58,7 @@ def create_app():
         
     @app.route('/1')
     @limiter.limit(DEDUP_WINDOW, key_func=url_dedup_key)
-    @limiter.limit("360 per hour")
+    @limiter.limit("3600 per hour")
     def gtts_route():
         text = request.args.get('text')
         varlang = request.args.get('lang')
@@ -83,7 +83,7 @@ def create_app():
 
     @app.route('/2')
     @limiter.limit(DEDUP_WINDOW, key_func=url_dedup_key)
-    @limiter.limit("360 per hour")
+    @limiter.limit("3600 per hour")
     def cosyvoice_route():
         """阿里百炼平台 CosyVoice TTS - 使用龙安欢声音"""
         text = request.args.get('text')
