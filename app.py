@@ -37,6 +37,8 @@ def create_app():
     # Configuration
     MAX_TEXT_LENGTH = 1000  # Maximum characters per request
     MAX_FILE_SIZE_MB = 10   # Maximum audio file size in MB
+    GTTS_TIMEOUT_SECONDS = float(os.getenv("GTTS_TIMEOUT_SECONDS", "20"))
+    COSYVOICE_TIMEOUT_MS = int(os.getenv("COSYVOICE_TIMEOUT_MS", "20000"))
     DEDUP_WINDOW = "1 per 10 seconds"
     HOURLY_LIMIT = "3600 per hour"
     DEDUP_LIMIT_ITEM = parse_many(DEDUP_WINDOW)[0]
@@ -133,7 +135,11 @@ def create_app():
             return validation_error
 
         try:
-            tts = gTTS(text=text, lang=detect_language(text, varlang))
+            tts = gTTS(
+                text=text,
+                lang=detect_language(text, varlang),
+                timeout=GTTS_TIMEOUT_SECONDS,
+            )
             with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp:
                 tts.save(tmp.name)
                 
@@ -162,7 +168,7 @@ def create_app():
                 model="cosyvoice-v3-plus",
                 voice="longanhuan"
             )
-            audio = synthesizer.call(text)
+            audio = synthesizer.call(text, timeout_millis=COSYVOICE_TIMEOUT_MS)
 
             if audio is None:
                 return 'Error: Failed to generate audio from CosyVoice API', 500
@@ -190,5 +196,14 @@ if __name__ == '__main__':
     # HTTPS configuration
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
     context.load_cert_chain('cert.pem', 'key.pem')
-    
-    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=context)
+
+    port = int(os.getenv("PORT", "5000"))
+    debug = os.getenv("FLASK_DEBUG", "").lower() in {"1", "true", "yes", "on"}
+    app.run(
+        host='0.0.0.0',
+        port=port,
+        debug=debug,
+        ssl_context=context,
+        threaded=True,
+        use_reloader=False,
+    )

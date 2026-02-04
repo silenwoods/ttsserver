@@ -100,7 +100,7 @@ python app.py
 pip install gunicorn
 
 # Run with gunicorn over HTTPS
-gunicorn -w 4 -b 0.0.0.0:5000 --certfile=cert.pem --keyfile=key.pem app:create_app()
+gunicorn -w 4 -b 0.0.0.0:5000 --timeout 30 --certfile=cert.pem --keyfile=key.pem app:create_app()
 
 # Or with systemd service (see below)
 ```
@@ -129,6 +129,10 @@ export PORT=5000
 # Custom certificate paths
 export CERT_PATH=./cert.pem
 export KEY_PATH=./key.pem
+
+# TTS timeouts
+export GTTS_TIMEOUT_SECONDS=20
+export COSYVOICE_TIMEOUT_MS=20000
 ```
 
 ## Production HTTPS Configuration

@@ -60,7 +60,7 @@ python app.py
 pip install gunicorn
 
 # Run with gunicorn
-gunicorn -w 4 -b 0.0.0.0:5000 app:create_app()
+gunicorn -w 4 -b 0.0.0.0:5000 --timeout 30 app:create_app()
 ```
 
 ## Port Configuration
@@ -80,6 +80,9 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:create_app()
 You can set these optional environment variables:
 - `FLASK_ENV=production` - Disable debug mode
 - `PORT=5000` - Set custom port
+- `FLASK_DEBUG=0` - Explicitly disable debug (default: off)
+- `GTTS_TIMEOUT_SECONDS=20` - gTTS network timeout seconds
+- `COSYVOICE_TIMEOUT_MS=20000` - CosyVoice API timeout in milliseconds
 
 ## Docker Deployment (Optional)
 ```dockerfile
