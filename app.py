@@ -11,6 +11,7 @@ import tempfile
 import os
 import subprocess
 import re
+import logging
 from langdetect import detect, detect_langs
 
 def create_app():
@@ -39,6 +40,7 @@ def create_app():
     MAX_FILE_SIZE_MB = 10   # Maximum audio file size in MB
     GTTS_TIMEOUT_SECONDS = float(os.getenv("GTTS_TIMEOUT_SECONDS", "20"))
     COSYVOICE_TIMEOUT_MS = int(os.getenv("COSYVOICE_TIMEOUT_MS", "20000"))
+    LOG_REQUESTS = os.getenv("LOG_REQUESTS", "0").lower() in {"1", "true", "yes", "on"}
     DEDUP_WINDOW = "1 per 10 seconds"
     HOURLY_LIMIT = "3600 per hour"
     DEDUP_LIMIT_ITEM = parse_many(DEDUP_WINDOW)[0]
@@ -85,6 +87,29 @@ def create_app():
             return rule_id, source
         source = "decorated" if getattr(limit_obj, "override_defaults", False) else "default"
         return f"{source}:unknown", source
+
+    if LOG_REQUESTS:
+        app.logger.setLevel(logging.INFO)
+
+        @app.before_request
+        def log_request():
+            app.logger.info("request: %s %s", request.method, request.url)
+
+        @app.after_request
+        def log_rate_limit_headers(response):
+            limit = response.headers.get("X-RateLimit-Limit") or response.headers.get("RateLimit-Limit")
+            remaining = response.headers.get("X-RateLimit-Remaining") or response.headers.get("RateLimit-Remaining")
+            reset = response.headers.get("X-RateLimit-Reset") or response.headers.get("RateLimit-Reset")
+            retry_after = response.headers.get("Retry-After")
+            if any(value is not None for value in (limit, remaining, reset, retry_after)):
+                app.logger.info(
+                    "rate_limit: limit=%s remaining=%s reset=%s retry_after=%s",
+                    limit,
+                    remaining,
+                    reset,
+                    retry_after,
+                )
+            return response
 
     @app.errorhandler(RateLimitExceeded)
     def handle_rate_limit(e):

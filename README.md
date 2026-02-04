@@ -83,6 +83,7 @@ You can set these optional environment variables:
 - `FLASK_DEBUG=0` - Explicitly disable debug (default: off)
 - `GTTS_TIMEOUT_SECONDS=20` - gTTS network timeout seconds
 - `COSYVOICE_TIMEOUT_MS=20000` - CosyVoice API timeout in milliseconds
+- `LOG_REQUESTS=1` - Log request URL and rate limit headers
 
 ## Docker Deployment (Optional)
 ```dockerfile

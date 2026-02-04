@@ -133,6 +133,9 @@ export KEY_PATH=./key.pem
 # TTS timeouts
 export GTTS_TIMEOUT_SECONDS=20
 export COSYVOICE_TIMEOUT_MS=20000
+
+# Logging
+export LOG_REQUESTS=1
 ```
 
 ## Production HTTPS Configuration
